@@ -48,8 +48,18 @@ EOF
 git clone -b %{version} --depth=2 https://chromium.googlesource.com/chromium/src
 gclient sync --no-history
 
+# Remove sysroots since we don't need, expect for the parts that we do
+declare -r sysroot_path="$PWD/src/build/linux/debian_bullseye_amd64-sysroot"
+declare -r include_path="$sysroot_path/usr/include"
+mv "$include_path/" "$PWD/include/"
+rm -rf "$sysroot_path" "$PWD/src/build/linux/debian_bullseye_i386-sysroot"
+mkdir -p "$include_path"
+mv "$PWD/include/" "$include_path/"
+
 # extra clean (big stuff that takes up space)
-rm -rf ./src/third_party/jdk/current ./src/third_party/blink/web_tests ./src/third_party/catapult/tracing/test_data ./src/third_party/depot_tools/.cipd_bin ./src/buildtools/reclient ./src/third_party/instrumented_libs
+rm -rf "$PWD/src/third_party/jdk/current" "$PWD/src/third_party/blink/web_tests" \
+       "$PWD/src/third_party/catapult/tracing/test_data" "$PWD/src/third_party/depot_tools/.cipd_bin" \
+       "$PWD/src/buildtools/reclient" "$PWD/src/third_party/instrumented_libs"
 
 # compress
 mv src/ chromium-%{version}/
